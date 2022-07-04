@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service              #定义资源类型为Service
+metadata:                  #定义Service的元信息
+  name: emotion-service      #定义service的名称
+  namespace: default       #定义service的命名空间(和deployment在一个空间）
+  labels:                  #定义service的标签
+    app: emotion
+
+spec:                      #设置service的属性
+  type: NodePort           #指定service的类型，使用NodePort。
+  ports:                   #指定端口,一个容器里的服务，对应一个端口。有几个服务>，就创建几组
+    - port: 8888           #指定ClusterIP 使用的端口
+      name: emotion
+      targetPort: 5000       #指定pod使用的端口
+      nodePort: 31234      #如不指定，会在30000-32767 随机分配 
+  selector:                #使用标签选择器去选择和对应的pod进行关联
+    app: emotion

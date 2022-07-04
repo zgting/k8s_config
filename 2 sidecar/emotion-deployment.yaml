@@ -1,0 +1,47 @@
+apiVersion: apps/v1        #指定api版本标签
+kind: Deployment         #定义资源的类型。可以是Deployment,Job,Ingress,Service等
+metadata:               #定义资源的元数据信息，比如资源的名称，namespace，标签等信息
+  name: emotion-deployment  #定义资源的名称，在同一个namespace空间中必须是唯一>的
+  namespace: default     #定义命名空间
+  labels:                #定义Deployment资源标签
+    app: emotion
+
+spec:               #定义deployment资源需要的参数属性，如，是否在容器失败时重启>容器的属性
+  replicas: 2       #定义副本的数量
+  selector:         #定义标签选择器
+    matchLabels:    #定义匹配的标签
+      app: emotion    #需要与.spec.template.metadata.labels定义的标签保持一致
+  template:         #定义 业务模板，如果有多个副本，所有的副本属性会按照模板的相关配置进行匹配
+    metadata:       #定义pod使用的元信息      
+      labels:       #定义Pod副本将使用的标签，需要与.spec.selector.matchLabels >定义的标签保持一致
+        app: emotion
+    spec:           #定义pod副本的属性（如pod里有几个容器，容器名，容器镜像，端>口等） 
+      containers:                #定义容器属性
+        - name: emotion            #容器的名称
+          image: zgtdockerall/emotion_analyze:v12   #容器使用的镜像
+          command: ["/bin/bash","-ce","python /code/flask_demo/emotion_flask.py"]
+          imagePullPolicy: IfNotPresent  #Never  
+          ports:                 #定义容器使用的端口
+            - containerPort: 5000  #容器使用80端口
+          resources:
+            requests:
+              cpu: 200m           #1000m=1逻辑cpu
+              memory: 200Mi
+            limits:
+              cpu: 1000m
+              memory: 1000Mi
+        - name: nginx            #容器的名称
+          image: zgtdockerall/nginx-rtmp:v2   #容器使用的镜像
+          command: ["/bin/bash","-ce","/etc/nginx/sbin/nginx -g 'daemon off;'"]
+          imagePullPolicy: IfNotPresent  #Never  
+          ports:                 #定义容器使用的端口
+            - containerPort: 1935  #容器使用80端口
+            - containerPort: 80  #容器使用80端口
+          resources:
+            requests:
+              cpu: 200m           #1000m=1逻辑cpu
+              memory: 200Mi
+            limits:
+              cpu: 1000m
+              memory: 1000Mi
+        
